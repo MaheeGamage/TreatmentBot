@@ -8,12 +8,14 @@
 const { ActivityTypes } = require('botbuilder');
 const { ChoicePrompt, DialogSet, NumberPrompt, TextPrompt, WaterfallDialog } = require('botbuilder-dialogs');
 
+const { HairSymptomsDialog } = require('./dialogs/HairSymptoms');
+
 const DIALOG_STATE_PROPERTY = 'dialogState';
 const USER_PROFILE_PROPERTY = 'user';
 
 const WHO_ARE_YOU = 'who_are_you';
 const HELLO_USER = 'hello_user';
-const HAIR_PROBLEMS = 'hear_problems';
+const DIALOG_HAIR_SYMPTOMS = 'hair_symptoms_dialog';
 
 const NAME_PROMPT = 'name_prompt';
 // const CONFIRM_PROMPT = 'confirm_prompt';
@@ -73,16 +75,8 @@ class MultiTurnBot {
             this.displayProfile.bind(this)
         ]));
 
-        this.dialogs.add(new WaterfallDialog(HAIR_PROBLEMS, [
-            this.promptSymptomHairFall.bind(this),
-            this.promptSymptomHairThin.bind(this),
-            this.promptSymptomHairCrack.bind(this),
-            this.promptSymptomHairSlowGrow.bind(this),
-            this.promptSymptomHairDandruff.bind(this),
-            this.promptSymptomHairInsect.bind(this),
-            this.promptSymptomHairWhite.bind(this),
-            this.promptSymptomHairNextStep.bind(this),
-        ]));
+        // Hari Problems symptoms 
+        this.dialogs.add(new HairSymptomsDialog(DIALOG_HAIR_SYMPTOMS, this.userProfile));
     }
 
     // This step in the dialog prompts the user for their name.
@@ -157,63 +151,6 @@ class MultiTurnBot {
 
     }
 
-    async promptSymptomHairFall(step) {
-        await step.prompt(SYMPTOMS_PROMPT, 'කොන්ඩය වැටීමෙන් පෙලෙනවාද?', ['yes', 'no']);
-    }
-    async promptSymptomHairThin(step) {
-        const user = await this.userProfile.get(step.context, {});
-        user.hair = {}
-        user.hair.fall = step.result && step.result.value
-        await this.userProfile.set(step.context, user);
-
-        await step.prompt(SYMPTOMS_PROMPT, 'කොන්ඩය තුනී වීමෙන් පෙලෙනවාද?', ['yes', 'no']);
-    }
-    async promptSymptomHairCrack(step) {
-        const user = await this.userProfile.get(step.context, {});
-        user.hair.thin = step.result && step.result.value
-        await this.userProfile.set(step.context, user);
-
-        await step.prompt(SYMPTOMS_PROMPT, 'කෙස් අග පැලීමෙන් පෙලෙනවාද?', ['yes', 'no']);
-    }
-    async promptSymptomHairSlowGrow(step) {
-        const user = await this.userProfile.get(step.context, {});
-        user.hair.crack = step.result && step.result.value
-        await this.userProfile.set(step.context, user);
-
-        await step.prompt(SYMPTOMS_PROMPT, 'හිසකෙස් වර්ධනය හීනද?', ['yes', 'no']);
-    }
-    async promptSymptomHairDandruff(step) {
-        const user = await this.userProfile.get(step.context, {});
-        user.hair.slowGrow = step.result && step.result.value
-        await this.userProfile.set(step.context, user);
-
-        await step.prompt(SYMPTOMS_PROMPT, 'හිස්සොරි වලින් පීඩා විදිනවාද?', ['yes', 'no']);
-    }
-    async promptSymptomHairInsect(step) {
-        const user = await this.userProfile.get(step.context, {});
-        user.hair.dandruff = step.result && step.result.value
-        await this.userProfile.set(step.context, user);
-
-        await step.prompt(SYMPTOMS_PROMPT, 'පරපොශිතයන්ගෙන් පීඩා විදිනවාද?', ['yes', 'no']);
-    }
-    async promptSymptomHairWhite(step) {
-        const user = await this.userProfile.get(step.context, {});
-        user.hair.insect = step.result && step.result.value
-        await this.userProfile.set(step.context, user);
-
-        await step.prompt(SYMPTOMS_PROMPT, 'කොන්ඩය සුදු වීමෙන් පෙලෙනවාද?', ['yes', 'no']);
-    }
-    async promptSymptomHairNextStep(step) {
-        const user = await this.userProfile.get(step.context, {});
-        user.hair.white = step.result && step.result.value
-        user.step=3
-        await this.userProfile.set(step.context, user); 
-
-        step.endDialog();
-    }
-
-
-
 
     // This step displays the captured information back to the user.
     async displayProfile(step) {
@@ -260,7 +197,7 @@ class MultiTurnBot {
                 }
                 else if(user.step === 2){
                     if (user.location === 'කොන්ඩය') { //&& false
-                        await dc.beginDialog(HAIR_PROBLEMS);
+                        await dc.beginDialog(DIALOG_HAIR_SYMPTOMS);
                     }
                 }
                 else if(user.step ===3){

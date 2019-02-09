@@ -1,6 +1,6 @@
 # Treatment Bot
-Bot Framework v4
+A bot that can suggest treatment for diseases
 
-This bot has been created using [Microsoft Bot Framework][1].
+This bot has been created using [Microsoft Bot Framework v4][1].
 
 [1]: https://dev.botframework.com

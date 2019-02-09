@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+//Steps
+// No Step data - ask basic questions ['කොන්ඩය', 'Skin', 'Lips', 'Nails']
+// Step === 2 - ask symptoms eg- kondaya watenawada?
+
 const { ActivityTypes } = require('botbuilder');
 const { ChoicePrompt, DialogSet, NumberPrompt, TextPrompt, WaterfallDialog } = require('botbuilder-dialogs');
 
@@ -9,6 +13,7 @@ const USER_PROFILE_PROPERTY = 'user';
 
 const WHO_ARE_YOU = 'who_are_you';
 const HELLO_USER = 'hello_user';
+const HAIR_PROBLEMS = 'hear_problems';
 
 const NAME_PROMPT = 'name_prompt';
 // const CONFIRM_PROMPT = 'confirm_prompt';
@@ -60,12 +65,23 @@ class MultiTurnBot {
             this.promptForAge.bind(this),
             this.captureAge.bind(this),
             this.promptIllLocation.bind(this),
-            this.promptSymptoms.bind(this),
+            this.captureIllLocation.bind(this),
         ]));
 
         // Create a dialog that displays a user name after it has been collected.
         this.dialogs.add(new WaterfallDialog(HELLO_USER, [
             this.displayProfile.bind(this)
+        ]));
+
+        this.dialogs.add(new WaterfallDialog(HAIR_PROBLEMS, [
+            this.promptSymptomHairFall.bind(this),
+            this.promptSymptomHairThin.bind(this),
+            this.promptSymptomHairCrack.bind(this),
+            this.promptSymptomHairSlowGrow.bind(this),
+            this.promptSymptomHairDandruff.bind(this),
+            this.promptSymptomHairInsect.bind(this),
+            this.promptSymptomHairWhite.bind(this),
+            this.promptSymptomHairNextStep.bind(this),
         ]));
     }
 
@@ -80,10 +96,10 @@ class MultiTurnBot {
         user.name = step.result;
         await this.userProfile.set(step.context, user);
         return await step.prompt(AGE_PROMPT, `What is your age?`,
-                {
-                    retryPrompt: 'Sorry, please specify your age as a positive number or say cancel.'
-                }
-            );
+            {
+                retryPrompt: 'Sorry, please specify your age as a positive number or say cancel.'
+            }
+        );
     }
 
     // This step checks the user's response - if yes, the bot will proceed to prompt for age.
@@ -106,7 +122,7 @@ class MultiTurnBot {
         if (step.result !== -1) {
             user.age = step.result;
             await this.userProfile.set(step.context, user);
-            await step.context.sendActivity(`I will remember that you are ${ step.result } years old.`);
+            await step.context.sendActivity(`I will remember that you are ${step.result} years old.`);
         } else {
             await step.context.sendActivity(`No age given.`);
         }
@@ -114,25 +130,88 @@ class MultiTurnBot {
     }
 
     async promptIllLocation(step) {
-        return await step.prompt(ILL_LOCATION_PROMPT, 'Where is your ill location', ['Hair', 'Skin', 'Lips', 'Nails']);
+        return await step.prompt(ILL_LOCATION_PROMPT, 'Where is your ill location', ['කොන්ඩය', 'Skin', 'Lips', 'Nails']);
     }
 
-    async promptSymptoms(step) {
-        // await step.context.sendActivity('reply ' + (step.result && step.result.value))
-        if (step.result && step.result.value === 'Hair') {
+    async captureIllLocation(step) {
+        const user = await this.userProfile.get(step.context, {});
+        user.location = step.result && step.result.value
+        user.step = 2
+        await this.userProfile.set(step.context, user);
 
-        }
-        else if (step.result && step.result.value === 'Skin') {
+        step.endDialog();
 
-        }
-        else if (step.result && step.result.value === 'Lips') {
+        // if (step.result && step.result.value === 'කොන්ඩය') {
 
-        }
-        else if (step.result && step.result.value === 'Nails') {
 
-        }
-        
+        // }
+        // else if (step.result && step.result.value === 'Skin') {
+
+        // }
+        // else if (step.result && step.result.value === 'Lips') {
+
+        // }
+        // else if (step.result && step.result.value === 'Nails') {
+
+        // }
+
     }
+
+    async promptSymptomHairFall(step) {
+        await step.prompt(SYMPTOMS_PROMPT, 'කොන්ඩය වැටීමෙන් පෙලෙනවාද?', ['yes', 'no']);
+    }
+    async promptSymptomHairThin(step) {
+        const user = await this.userProfile.get(step.context, {});
+        user.hair = {}
+        user.hair.fall = step.result && step.result.value
+        await this.userProfile.set(step.context, user);
+
+        await step.prompt(SYMPTOMS_PROMPT, 'කොන්ඩය තුනී වීමෙන් පෙලෙනවාද?', ['yes', 'no']);
+    }
+    async promptSymptomHairCrack(step) {
+        const user = await this.userProfile.get(step.context, {});
+        user.hair.thin = step.result && step.result.value
+        await this.userProfile.set(step.context, user);
+
+        await step.prompt(SYMPTOMS_PROMPT, 'කෙස් අග පැලීමෙන් පෙලෙනවාද?', ['yes', 'no']);
+    }
+    async promptSymptomHairSlowGrow(step) {
+        const user = await this.userProfile.get(step.context, {});
+        user.hair.crack = step.result && step.result.value
+        await this.userProfile.set(step.context, user);
+
+        await step.prompt(SYMPTOMS_PROMPT, 'හිසකෙස් වර්ධනය හීනද?', ['yes', 'no']);
+    }
+    async promptSymptomHairDandruff(step) {
+        const user = await this.userProfile.get(step.context, {});
+        user.hair.slowGrow = step.result && step.result.value
+        await this.userProfile.set(step.context, user);
+
+        await step.prompt(SYMPTOMS_PROMPT, 'හිස්සොරි වලින් පීඩා විදිනවාද?', ['yes', 'no']);
+    }
+    async promptSymptomHairInsect(step) {
+        const user = await this.userProfile.get(step.context, {});
+        user.hair.dandruff = step.result && step.result.value
+        await this.userProfile.set(step.context, user);
+
+        await step.prompt(SYMPTOMS_PROMPT, 'පරපොශිතයන්ගෙන් පීඩා විදිනවාද?', ['yes', 'no']);
+    }
+    async promptSymptomHairWhite(step) {
+        const user = await this.userProfile.get(step.context, {});
+        user.hair.insect = step.result && step.result.value
+        await this.userProfile.set(step.context, user);
+
+        await step.prompt(SYMPTOMS_PROMPT, 'කොන්ඩය සුදු වීමෙන් පෙලෙනවාද?', ['yes', 'no']);
+    }
+    async promptSymptomHairNextStep(step) {
+        const user = await this.userProfile.get(step.context, {});
+        user.hair.white = step.result && step.result.value
+        user.step=3
+        await this.userProfile.set(step.context, user); 
+
+        step.endDialog();
+    }
+
 
 
 
@@ -140,11 +219,11 @@ class MultiTurnBot {
     async displayProfile(step) {
         const user = await this.userProfile.get(step.context, {});
         if (user.age) {
-            await step.context.sendActivity(`Your name is ${ user.name } and you are ${ user.age } years old.`);
+            await step.context.sendActivity(`Your name is ${user.name} and you are ${user.age} years old.`);
         } else {
-            await step.context.sendActivity(`Your name is ${ user.name } and you did not share your age.`);
+            await step.context.sendActivity(`Your name is ${user.name} and you did not share your age.`);
         }
-        
+
         return await step.endDialog();
     }
 
@@ -167,7 +246,7 @@ class MultiTurnBot {
                 } else {
                     await dc.context.sendActivity(`Nothing to cancel.`);
                 }
-                
+
             }
 
             // If the bot has not yet responded, continue processing the current dialog.
@@ -176,11 +255,23 @@ class MultiTurnBot {
             // Start the sample dialog in response to any other input.
             if (!turnContext.responded) {
                 const user = await this.userProfile.get(dc.context, {});
-                if (user.name ) { //&& false
-                    await dc.beginDialog(HELLO_USER);
-                } else {
+                if(!user.step){
                     await dc.beginDialog(WHO_ARE_YOU);
                 }
+                else if(user.step === 2){
+                    if (user.location === 'කොන්ඩය') { //&& false
+                        await dc.beginDialog(HAIR_PROBLEMS);
+                    }
+                }
+                else if(user.step ===3){
+                    console.log(user.hair)
+                    await turnContext.sendActivity(`Hair: \n${ user.hair.fall} \n${ user.hair.thin} \n${ user.hair.crack}`);
+                }
+                // if (user.name) { //&& false
+                //     await dc.beginDialog(HELLO_USER);
+                // } else {
+                //     await dc.beginDialog(WHO_ARE_YOU);
+                // }
             }
         } else if (turnContext.activity.type === ActivityTypes.ConversationUpdate) {
             // Do we have any new members added to the conversation?
@@ -213,3 +304,5 @@ class MultiTurnBot {
 }
 
 module.exports.MultiTurnBot = MultiTurnBot;
+
+

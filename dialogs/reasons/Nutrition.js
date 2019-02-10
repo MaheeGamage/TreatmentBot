@@ -79,6 +79,7 @@ class Nutrition extends ComponentDialog {
             user.reason.nutrition++
             await this.userProfile.set(step.context, user);
         }
+        user.reason.nutrition /= 3
         user.reason.lastReason = 'nutrition'
         await this.userProfile.set(step.context, user);
         return await step.endDialog();

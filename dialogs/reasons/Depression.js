@@ -89,6 +89,7 @@ class Depression extends ComponentDialog {
             user.reason.depression++
             await this.userProfile.set(step.context, user);
         }
+        user.reason.depression = user.reason.depression/4
         user.reason.lastReason = 'depression'
         await this.userProfile.set(step.context, user);
         return await step.endDialog();

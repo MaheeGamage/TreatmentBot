@@ -70,6 +70,7 @@ class Dandruff extends ComponentDialog {
             user.reason.dandruff++
             await this.userProfile.set(step.context, user);
         }
+        user.reason.dandruff /= 2
         user.reason.lastReason = 'dandruff'
         await this.userProfile.set(step.context, user);
         return await step.endDialog();

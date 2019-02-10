@@ -8,8 +8,8 @@
 const { ActivityTypes } = require('botbuilder');
 const { ChoicePrompt, DialogSet, NumberPrompt, TextPrompt, WaterfallDialog } = require('botbuilder-dialogs');
 
-// const { HairSymptomsDialog } = require('./dialogs/HairSymptoms');
-// const { HairFallDialog } = require('./dialogs/HairFall');
+const { Step4Dialog } = require('./dialogs/step4');
+const DIALOG_STEP_4 = 'dialog_step_4'
 
 /***** Reason Dialogs */
 const { ReasonNutritionDialog } = require('./dialogs/reasons/Nutrition');
@@ -30,6 +30,8 @@ const USER_PROFILE_PROPERTY = 'user';
 
 const WHO_ARE_YOU = 'who_are_you';
 const HELLO_USER = 'hello_user';
+const GET_TREATMENT_LOCATION = 'get_treatment_location';
+const SUGGEST_TREATMENT = 'suggest_treatment';
 const SET_NEXT_STEP_4 = 'set_next_step_4'
 const DIALOG_HAIR_SYMPTOMS = 'hair_symptoms_dialog';
 const DIALOG_HAIR_PROBLEMS = 'dialog_hair_problems'
@@ -42,6 +44,7 @@ const SYMPTOMS_PROMPT = 'symptoms_prompt';
 const AGE_PROMPT = 'age_prompt';
 const ILL_LOCATION_PROMPT = 'ILL_LOCATION_PROMPT';
 const HAIR_PROBLEM_PROMPT = 'HAIR_PROBLEM_PROMPT';
+const RESTART_QUESTION_PROMPT = 'RESTART_QUESTION_PROMPT'
 
 class MultiTurnBot {
     /**
@@ -66,6 +69,7 @@ class MultiTurnBot {
         this.dialogs.add(new ChoicePrompt(ILL_LOCATION_PROMPT));
         this.dialogs.add(new ChoicePrompt(SYMPTOMS_PROMPT));
         this.dialogs.add(new ChoicePrompt(HAIR_PROBLEM_PROMPT));
+        this.dialogs.add(new ChoicePrompt(RESTART_QUESTION_PROMPT));
         this.dialogs.add(new NumberPrompt(AGE_PROMPT, async (prompt) => {
             if (prompt.recognized.succeeded) {
                 if (prompt.recognized.value <= 0) {
@@ -79,6 +83,8 @@ class MultiTurnBot {
             return false;
         }));
 
+        this.dialogs.add(new Step4Dialog(DIALOG_STEP_4, this.userProfile));
+
         /*******Reason dialogs */
         this.dialogs.add(new ReasonNutritionDialog(DIALOG_REASON_NUTRITION, this.userProfile));
         this.dialogs.add(new ReasonDepressionDialog(DIALOG_REASON_DEPRESSION, this.userProfile));
@@ -87,12 +93,24 @@ class MultiTurnBot {
         this.dialogs.add(new ReasonChemicalDialog(DIALOG_REASON_CHEMICAL, this.userProfile));
         /***********************/
 
+        /********Treatment Dialog ******/
+        this.dialogs.add(new WaterfallDialog(SUGGEST_TREATMENT, [
+            this.getTreatment.bind(this),
+            this.captureRestartQuestion.bind(this),
+        ]));
+        /*******************************/
+
         // Create a dialog that asks the user for their name.
         this.dialogs.add(new WaterfallDialog(WHO_ARE_YOU, [
             this.promptForName.bind(this),
             // this.confirmAgePrompt.bind(this),
             this.promptForAge.bind(this),
             this.captureAge.bind(this),
+            // this.promptIllLocation.bind(this),
+            // this.captureIllLocation.bind(this),
+        ]));
+
+        this.dialogs.add(new WaterfallDialog(GET_TREATMENT_LOCATION, [
             this.promptIllLocation.bind(this),
             this.captureIllLocation.bind(this),
         ]));
@@ -106,6 +124,8 @@ class MultiTurnBot {
         this.dialogs.add(new WaterfallDialog(HELLO_USER, [
             this.displayProfile.bind(this)
         ]));
+
+
 
         // Create a dialog that set step of User state to next step number.
         this.dialogs.add(new WaterfallDialog(SET_NEXT_STEP_4, [
@@ -147,14 +167,15 @@ class MultiTurnBot {
     // This step captures the user's age.
     async captureAge(step) {
         const user = await this.userProfile.get(step.context, {});
-        if (step.result !== -1) {
-            user.age = step.result;
-            await this.userProfile.set(step.context, user);
-            await step.context.sendActivity(`I will remember that you are ${step.result} years old.`);
-        } else {
-            await step.context.sendActivity(`No age given.`);
-        }
-        return await step.next(-1); //step.endDialog();
+        // if (step.result !== -1) {
+        user.age = step.result;
+        user.step = 1
+        await this.userProfile.set(step.context, user);
+        // await step.context.sendActivity(`I will remember that you are ${step.result} years old.`);
+        // } else {
+        //     await step.context.sendActivity(`No age given.`);
+        // }
+        return await step.endDialog(); //step.next(-1); //
     }
 
     async promptIllLocation(step) {
@@ -187,11 +208,61 @@ class MultiTurnBot {
     async goToNextStep4(step) {
         const user = await this.userProfile.get(step.context, {});
         user.step = 4
+
+        delete user.reason.latReason
+        console.log('end of step 3' + user.reason)
+
+        var maxProb
+        for (var key in user.reason) {
+            if (user.reason.hasOwnProperty(key)) {
+                if (!maxProb) {
+                    maxProb = key
+                }
+                else {
+                    if (user.reason[key] > user.reason[maxProb]) {
+                        maxProb = key
+                    }
+                    
+                }
+                if(user.reason[key] == 1){
+                    maxProb = key
+                    break;
+                }
+            }
+        }
+        user.suggestedReason = maxProb
+
         await this.userProfile.set(step.context, user);
-        console.log('end of step 3')
-        // return await step.endDialog();
-        
+        console.log('highest Prob ' + maxProb)
+
         await step.context.sendActivity(`Say something to get your treatments`);
+        return await step.endDialog();
+    }
+
+    async getTreatment(step) {
+        const user = await this.userProfile.get(step.context, {});
+
+        await step.context.sendActivity(`Reason: ${user.suggestedReason}`);
+        await step.context.sendActivity(`Treatments: ${Treatments[user.suggestedReason]}`);
+
+        return await step.prompt(RESTART_QUESTION_PROMPT, 'Do you have another question', ['ඔව්', 'නැත']);
+    }
+
+    async captureRestartQuestion(step) {
+        const user = await this.userProfile.get(step.context, {});
+
+        if (step.result && step.result.value === 'ඔව්') {
+            let newUser = {}
+            newUser.name = user.name
+            newUser.age = user.age
+            newUser.step = 1
+            await this.userProfile.set(step.context, newUser);
+        } else {
+            // user.step = 5
+        }
+
+        
+        return await step.endDialog();
     }
 
 
@@ -239,6 +310,9 @@ class MultiTurnBot {
                 if (!user.step) {
                     await dc.beginDialog(WHO_ARE_YOU);
                 }
+                else if (user.step === 1) {
+                    await dc.beginDialog(GET_TREATMENT_LOCATION);
+                }
                 else if (user.step === 2) {
                     if (user.location === 'කොන්ඩය') { //&& false
                         await dc.beginDialog(DIALOG_HAIR_PROBLEMS);
@@ -249,8 +323,8 @@ class MultiTurnBot {
                         if (user.hairProblem === 'කොන්ඩය වැටීම') { //&& false
                             // console.log(user.reason)
                             if (user.reason && user.reason.lastReason && user.reason.lastReason === 'nutrition') {
-                                await dc.beginDialog(SET_NEXT_STEP_4)
-                                // await dc.beginDialog(DIALOG_REASON_DEPRESSION)
+                                // await dc.beginDialog(SET_NEXT_STEP_4)
+                                await dc.beginDialog(DIALOG_REASON_DEPRESSION)
                             }
                             else if (user.reason && user.reason.lastReason && user.reason.lastReason === 'depression') {
                                 await dc.beginDialog(DIALOG_REASON_DANDRUFF)
@@ -262,6 +336,7 @@ class MultiTurnBot {
                                 await dc.beginDialog(DIALOG_REASON_CHEMICAL)
                             }
                             else if (user.reason && user.reason.lastReason && user.reason.lastReason === 'chemical') {
+                                console.log('Reason chemical dialog')
                                 await dc.beginDialog(SET_NEXT_STEP_4)
                             }
                             else
@@ -271,8 +346,8 @@ class MultiTurnBot {
                     }
                 }
                 else if (user.step === 4) {
-                    console.log(user.step)
-                    await dc.beginDialog(HELLO_USER);
+                    console.log(user.reason)
+                    await dc.beginDialog(SUGGEST_TREATMENT);
                 }
 
             }
@@ -308,4 +383,10 @@ class MultiTurnBot {
 
 module.exports.MultiTurnBot = MultiTurnBot;
 
-
+const Treatments = {
+    nutrition: 'get nutrition',
+    depression: 'reduce depression',
+    dandruff: 'remove dandruff',
+    enviroment: 'better enviroment',
+    chemical: 'remove chemical',
+}

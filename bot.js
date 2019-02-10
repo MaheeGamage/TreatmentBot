@@ -8,20 +8,40 @@
 const { ActivityTypes } = require('botbuilder');
 const { ChoicePrompt, DialogSet, NumberPrompt, TextPrompt, WaterfallDialog } = require('botbuilder-dialogs');
 
-const { HairSymptomsDialog } = require('./dialogs/HairSymptoms');
+// const { HairSymptomsDialog } = require('./dialogs/HairSymptoms');
+// const { HairFallDialog } = require('./dialogs/HairFall');
+
+/***** Reason Dialogs */
+const { ReasonNutritionDialog } = require('./dialogs/reasons/Nutrition');
+const { ReasonDepressionDialog } = require('./dialogs/reasons/Depression');
+const { ReasonDandruffDialog } = require('./dialogs/reasons/Dandruff');
+const { ReasonEnviromentDialog } = require('./dialogs/reasons/Enviroment');
+const { ReasonChemicalDialog } = require('./dialogs/reasons/Chemical');
+
+const DIALOG_REASON_NUTRITION = 'dialog_reason_nutrition';
+const DIALOG_REASON_DEPRESSION = 'dialog_reason_depression';
+const DIALOG_REASON_DANDRUFF = 'dialog_reason_dandruff';
+const DIALOG_REASON_ENVIROMENT = 'dialog_reason_enviroment';
+const DIALOG_REASON_CHEMICAL = 'dialog_reason_chemical';
+/******************** */
 
 const DIALOG_STATE_PROPERTY = 'dialogState';
 const USER_PROFILE_PROPERTY = 'user';
 
 const WHO_ARE_YOU = 'who_are_you';
 const HELLO_USER = 'hello_user';
+const SET_NEXT_STEP_4 = 'set_next_step_4'
 const DIALOG_HAIR_SYMPTOMS = 'hair_symptoms_dialog';
+const DIALOG_HAIR_PROBLEMS = 'dialog_hair_problems'
+
+const DIALOG_HAIR_FALL = 'hair_fall_dialog'
 
 const NAME_PROMPT = 'name_prompt';
 // const CONFIRM_PROMPT = 'confirm_prompt';
 const SYMPTOMS_PROMPT = 'symptoms_prompt';
 const AGE_PROMPT = 'age_prompt';
 const ILL_LOCATION_PROMPT = 'ILL_LOCATION_PROMPT';
+const HAIR_PROBLEM_PROMPT = 'HAIR_PROBLEM_PROMPT';
 
 class MultiTurnBot {
     /**
@@ -44,9 +64,8 @@ class MultiTurnBot {
         this.dialogs.add(new TextPrompt(NAME_PROMPT));
         // this.dialogs.add(new ChoicePrompt(CONFIRM_PROMPT));
         this.dialogs.add(new ChoicePrompt(ILL_LOCATION_PROMPT));
-
         this.dialogs.add(new ChoicePrompt(SYMPTOMS_PROMPT));
-
+        this.dialogs.add(new ChoicePrompt(HAIR_PROBLEM_PROMPT));
         this.dialogs.add(new NumberPrompt(AGE_PROMPT, async (prompt) => {
             if (prompt.recognized.succeeded) {
                 if (prompt.recognized.value <= 0) {
@@ -60,6 +79,14 @@ class MultiTurnBot {
             return false;
         }));
 
+        /*******Reason dialogs */
+        this.dialogs.add(new ReasonNutritionDialog(DIALOG_REASON_NUTRITION, this.userProfile));
+        this.dialogs.add(new ReasonDepressionDialog(DIALOG_REASON_DEPRESSION, this.userProfile));
+        this.dialogs.add(new ReasonDandruffDialog(DIALOG_REASON_DANDRUFF, this.userProfile));
+        this.dialogs.add(new ReasonEnviromentDialog(DIALOG_REASON_ENVIROMENT, this.userProfile));
+        this.dialogs.add(new ReasonChemicalDialog(DIALOG_REASON_CHEMICAL, this.userProfile));
+        /***********************/
+
         // Create a dialog that asks the user for their name.
         this.dialogs.add(new WaterfallDialog(WHO_ARE_YOU, [
             this.promptForName.bind(this),
@@ -70,13 +97,20 @@ class MultiTurnBot {
             this.captureIllLocation.bind(this),
         ]));
 
+        this.dialogs.add(new WaterfallDialog(DIALOG_HAIR_PROBLEMS, [
+            this.promptHairProblem.bind(this),
+            this.captureHairProblem.bind(this),
+        ]));
+
         // Create a dialog that displays a user name after it has been collected.
         this.dialogs.add(new WaterfallDialog(HELLO_USER, [
             this.displayProfile.bind(this)
         ]));
 
-        // Hari Problems symptoms 
-        this.dialogs.add(new HairSymptomsDialog(DIALOG_HAIR_SYMPTOMS, this.userProfile));
+        // Create a dialog that set step of User state to next step number.
+        this.dialogs.add(new WaterfallDialog(SET_NEXT_STEP_4, [
+            this.goToNextStep4.bind(this)
+        ]));
     }
 
     // This step in the dialog prompts the user for their name.
@@ -133,22 +167,31 @@ class MultiTurnBot {
         user.step = 2
         await this.userProfile.set(step.context, user);
 
-        step.endDialog();
+        return await step.endDialog();
+    }
 
-        // if (step.result && step.result.value === 'කොන්ඩය') {
+    async promptHairProblem(step) {
+        return await step.prompt(HAIR_PROBLEM_PROMPT, 'Where is your Hair Problem', ['කොන්ඩය වැටීම', 'කොන්ඩය තුනී වීම',
+            'කෙස් අග පැලීම', 'කෙස් වර්ධනය හීන වීම', 'ඉස්සොරි/හිස්සොරි/හිස්හොරි', 'පරපොශිතයන්', 'කොන්ඩය සුදු වීම']);
+    }
 
+    async captureHairProblem(step) {
+        const user = await this.userProfile.get(step.context, {});
+        user.hairProblem = step.result && step.result.value
+        user.step = 3
+        await this.userProfile.set(step.context, user);
 
-        // }
-        // else if (step.result && step.result.value === 'Skin') {
+        return await step.endDialog();
+    }
 
-        // }
-        // else if (step.result && step.result.value === 'Lips') {
-
-        // }
-        // else if (step.result && step.result.value === 'Nails') {
-
-        // }
-
+    async goToNextStep4(step) {
+        const user = await this.userProfile.get(step.context, {});
+        user.step = 4
+        await this.userProfile.set(step.context, user);
+        console.log('end of step 3')
+        // return await step.endDialog();
+        
+        await step.context.sendActivity(`Say something to get your treatments`);
     }
 
 
@@ -192,23 +235,46 @@ class MultiTurnBot {
             // Start the sample dialog in response to any other input.
             if (!turnContext.responded) {
                 const user = await this.userProfile.get(dc.context, {});
-                if(!user.step){
+                console.log('out: ' + user.step)
+                if (!user.step) {
                     await dc.beginDialog(WHO_ARE_YOU);
                 }
-                else if(user.step === 2){
+                else if (user.step === 2) {
                     if (user.location === 'කොන්ඩය') { //&& false
-                        await dc.beginDialog(DIALOG_HAIR_SYMPTOMS);
+                        await dc.beginDialog(DIALOG_HAIR_PROBLEMS);
                     }
                 }
-                else if(user.step ===3){
-                    console.log(user.hair)
-                    await turnContext.sendActivity(`Hair: \n${ user.hair.fall} \n${ user.hair.thin} \n${ user.hair.crack}`);
+                else if (user.step === 3) {
+                    if (user.location === 'කොන්ඩය') { //&& false
+                        if (user.hairProblem === 'කොන්ඩය වැටීම') { //&& false
+                            // console.log(user.reason)
+                            if (user.reason && user.reason.lastReason && user.reason.lastReason === 'nutrition') {
+                                await dc.beginDialog(SET_NEXT_STEP_4)
+                                // await dc.beginDialog(DIALOG_REASON_DEPRESSION)
+                            }
+                            else if (user.reason && user.reason.lastReason && user.reason.lastReason === 'depression') {
+                                await dc.beginDialog(DIALOG_REASON_DANDRUFF)
+                            }
+                            else if (user.reason && user.reason.lastReason && user.reason.lastReason === 'dandruff') {
+                                await dc.beginDialog(DIALOG_REASON_ENVIROMENT)
+                            }
+                            else if (user.reason && user.reason.lastReason && user.reason.lastReason === 'enviroment') {
+                                await dc.beginDialog(DIALOG_REASON_CHEMICAL)
+                            }
+                            else if (user.reason && user.reason.lastReason && user.reason.lastReason === 'chemical') {
+                                await dc.beginDialog(SET_NEXT_STEP_4)
+                            }
+                            else
+                                await dc.beginDialog(DIALOG_REASON_NUTRITION);
+
+                        }
+                    }
                 }
-                // if (user.name) { //&& false
-                //     await dc.beginDialog(HELLO_USER);
-                // } else {
-                //     await dc.beginDialog(WHO_ARE_YOU);
-                // }
+                else if (user.step === 4) {
+                    console.log(user.step)
+                    await dc.beginDialog(HELLO_USER);
+                }
+
             }
         } else if (turnContext.activity.type === ActivityTypes.ConversationUpdate) {
             // Do we have any new members added to the conversation?

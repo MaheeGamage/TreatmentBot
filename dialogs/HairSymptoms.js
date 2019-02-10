@@ -14,10 +14,10 @@ const { ComponentDialog, WaterfallDialog, TextPrompt, ChoicePrompt } = require('
 // const NAME_LENGTH_MIN = 3;
 
 // Dialog IDs
-const HAIR_SYMPTOMS_DIALOG = 'hair_symptoms_dialog';
+const HAIR_SYMPTOMS = 'hair_symptoms_dialog';
 
 // Prompt IDs
-const SYMPTOMS_PROMPT = 'symptoms_prompt';
+const SYMPTOMS_PROMPT = 'symptoms';
 
 const VALIDATION_SUCCEEDED = true;
 const VALIDATION_FAILED = !VALIDATION_SUCCEEDED;
@@ -43,7 +43,7 @@ class HairSymptoms extends ComponentDialog {
         // Add a water fall dialog with 4 steps.
         // The order of step function registration is importent
         // as a water fall dialog executes steps registered in order
-        this.addDialog(new WaterfallDialog(HAIR_SYMPTOMS_DIALOG, [
+        this.addDialog(new WaterfallDialog(HAIR_SYMPTOMS, [
             this.promptSymptomHairFall.bind(this),
             this.promptSymptomHairThin.bind(this),
             this.promptSymptomHairCrack.bind(this),

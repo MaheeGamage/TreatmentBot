@@ -17,12 +17,20 @@ const { ReasonDepressionDialog } = require('./dialogs/reasons/Depression');
 const { ReasonDandruffDialog } = require('./dialogs/reasons/Dandruff');
 const { ReasonEnviromentDialog } = require('./dialogs/reasons/Enviroment');
 const { ReasonChemicalDialog } = require('./dialogs/reasons/Chemical');
+const { ReasonFamilyDialog } = require('./dialogs/reasons/Family');
+const { ReasonCatarrhDialog } = require('./dialogs/reasons/Catarrh');
+const { ReasonHighTempDialog } = require('./dialogs/reasons/HighTemp');
+const { ReasonDryHairDialog } = require('./dialogs/reasons/DryHair');
 
 const DIALOG_REASON_NUTRITION = 'dialog_reason_nutrition';
 const DIALOG_REASON_DEPRESSION = 'dialog_reason_depression';
 const DIALOG_REASON_DANDRUFF = 'dialog_reason_dandruff';
 const DIALOG_REASON_ENVIROMENT = 'dialog_reason_enviroment';
 const DIALOG_REASON_CHEMICAL = 'dialog_reason_chemical';
+const DIALOG_REASON_FAMILY = 'dialog_reason_family';
+const DIALOG_REASON_CATARRH = 'dialog_reason_catarrh';
+const DIALOG_REASON_HIGH_TEMP = 'dialog_reason_high_temp';
+const DIALOG_REASON_DRY_HAIR = 'dialog_reason_dry_hair';
 /******************** */
 
 const DIALOG_STATE_PROPERTY = 'dialogState';
@@ -91,6 +99,10 @@ class MultiTurnBot {
         this.dialogs.add(new ReasonDandruffDialog(DIALOG_REASON_DANDRUFF, this.userProfile));
         this.dialogs.add(new ReasonEnviromentDialog(DIALOG_REASON_ENVIROMENT, this.userProfile));
         this.dialogs.add(new ReasonChemicalDialog(DIALOG_REASON_CHEMICAL, this.userProfile));
+        this.dialogs.add(new ReasonFamilyDialog(DIALOG_REASON_FAMILY, this.userProfile));
+        this.dialogs.add(new ReasonCatarrhDialog(DIALOG_REASON_CATARRH, this.userProfile));
+        this.dialogs.add(new ReasonHighTempDialog(DIALOG_REASON_HIGH_TEMP, this.userProfile));
+        this.dialogs.add(new ReasonDryHairDialog(DIALOG_REASON_DRY_HAIR, this.userProfile));
         /***********************/
 
         /********Treatment Dialog ******/
@@ -210,7 +222,7 @@ class MultiTurnBot {
         user.step = 4
 
         delete user.reason.latReason
-        console.log('end of step 3' + user.reason)
+        console.log(user.reason)
 
         var maxProb
         for (var key in user.reason) {
@@ -245,7 +257,7 @@ class MultiTurnBot {
         await step.context.sendActivity(`Reason: ${user.suggestedReason}`);
         await step.context.sendActivity(`Treatments: ${Treatments[user.suggestedReason]}`);
 
-        return await step.prompt(RESTART_QUESTION_PROMPT, 'Do you have another question', ['ඔව්', 'නැත']);
+        return await step.prompt(RESTART_QUESTION_PROMPT, 'Do you have another question', ['ඔව්']);
     }
 
     async captureRestartQuestion(step) {
@@ -292,6 +304,7 @@ class MultiTurnBot {
             if (utterance === 'cancel') {
                 // await this.userProfile.delete()
                 if (dc.activeDialog) {
+                    await this.userProfile.set(dc.context, {});
                     await dc.cancelAllDialogs();
                     await dc.context.sendActivity(`Ok... canceled.`);
                 } else {
@@ -306,7 +319,7 @@ class MultiTurnBot {
             // Start the sample dialog in response to any other input.
             if (!turnContext.responded) {
                 const user = await this.userProfile.get(dc.context, {});
-                console.log('out: ' + user.step)
+                // console.log('out: ' + user.step)
                 if (!user.step) {
                     await dc.beginDialog(WHO_ARE_YOU);
                 }
@@ -333,6 +346,7 @@ class MultiTurnBot {
                                 await dc.beginDialog(DIALOG_REASON_ENVIROMENT)
                             }
                             else if (user.reason && user.reason.lastReason && user.reason.lastReason === 'enviroment') {
+                                console.log('Reason enviroment dialog')
                                 await dc.beginDialog(DIALOG_REASON_CHEMICAL)
                             }
                             else if (user.reason && user.reason.lastReason && user.reason.lastReason === 'chemical') {
@@ -341,6 +355,40 @@ class MultiTurnBot {
                             }
                             else
                                 await dc.beginDialog(DIALOG_REASON_NUTRITION);
+
+                        }
+                        if (user.hairProblem === 'කොන්ඩය තුනී වීම') { //&& false
+                            // console.log(user.reason)
+                            if (user.reason && user.reason.lastReason && user.reason.lastReason === 'family') {
+                                await dc.beginDialog(DIALOG_REASON_CATARRH)
+                            }
+                            else if (user.reason && user.reason.lastReason && user.reason.lastReason === 'catarrh') {
+                                await dc.beginDialog(DIALOG_REASON_CHEMICAL)
+                            }
+                            else if (user.reason && user.reason.lastReason && user.reason.lastReason === 'chemical') {
+                                console.log(user.reason)
+                                await dc.beginDialog(SET_NEXT_STEP_4)
+                            }
+                            else
+                                await dc.beginDialog(DIALOG_REASON_FAMILY);
+
+                        }
+                        if (user.hairProblem === 'කෙස් අග පැලීම') { //&& false
+                            // console.log(user.reason)
+                            if (user.reason && user.reason.lastReason && user.reason.lastReason === 'dry_hair') {
+                                await dc.beginDialog(DIALOG_REASON_CHEMICAL)
+                            }
+                            else if (user.reason && user.reason.lastReason && user.reason.lastReason === 'chemical') {
+                                await dc.beginDialog(DIALOG_REASON_NUTRITION)
+                            }
+                            else if (user.reason && user.reason.lastReason && user.reason.lastReason === 'nutrition') {
+                                await dc.beginDialog(DIALOG_REASON_HIGH_TEMP)
+                            }
+                            else if (user.reason && user.reason.lastReason && user.reason.lastReason === 'high_temp') {
+                                await dc.beginDialog(SET_NEXT_STEP_4)
+                            }
+                            else
+                                await dc.beginDialog(DIALOG_REASON_DRY_HAIR);
 
                         }
                     }

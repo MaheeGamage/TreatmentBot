@@ -51,22 +51,22 @@ class Dandruff extends ComponentDialog {
         user.reason.dandruff = 0
         await this.userProfile.set(step.context, user);
 
-        return await step.prompt(REASON_PROMPT, 'ඔබට හිශොරි තිබෙද?', ['yes', 'no']);
+        return await step.prompt(REASON_PROMPT, 'ඔබට හිශොරි තිබෙද?', ['ඔව්', 'නැත']);
     }
 
     async promptDandruffDry(step) {
         const user = await this.userProfile.get(step.context, {});
-        if (step.result && step.result.value === 'no') {
+        if (step.result && step.result.value === 'නැත') {
             user.reason.dandruff++
             await this.userProfile.set(step.context, user);
         }
 
-        return await step.prompt(REASON_PROMPT, 'ඔබේ හිස් කබලේ නිතර වියලි ස්වභාවයක් තිබේද?', ['yes', 'no']);
+        return await step.prompt(REASON_PROMPT, 'ඔබේ හිස් කබලේ නිතර වියලි ස්වභාවයක් තිබේද?', ['ඔව්', 'නැත']);
     }
 
     async captureDandruffEnd(step) {
         const user = await this.userProfile.get(step.context);
-        if (step.result && step.result.value === 'no') {
+        if (step.result && step.result.value === 'නැත') {
             user.reason.dandruff++
             await this.userProfile.set(step.context, user);
         }

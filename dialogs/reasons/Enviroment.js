@@ -9,7 +9,7 @@ const ENVIROMENT = 'enviroment';
 const REASON_PROMPT = 'reason_prompt';
 
 //Reason type
-REASON_TYPE='enviroment'
+const REASON_TYPE='enviroment'
 
 // const VALIDATION_SUCCEEDED = true;
 // const VALIDATION_FAILED = !VALIDATION_SUCCEEDED;
@@ -59,72 +59,72 @@ class Enviroment extends ComponentDialog {
         user.reason['enviroment'] = 0
         await this.userProfile.set(step.context, user);
 
-        return await step.prompt(REASON_PROMPT, 'ඔබ නිතර දූවිලි සහිත පරිසරයක ගැවසෙනවාද?', ['yes', 'no']);
+        return await step.prompt(REASON_PROMPT, 'ඔබ නිතර දූවිලි සහිත පරිසරයක ගැවසෙනවාද?', ['ඔව්', 'නැත']);
     }
 
     async promptReason2(step) {
         const user = await this.userProfile.get(step.context, {});
-        if (step.result && step.result.value === 'no') {
+        if (step.result && step.result.value === 'ඔව්') {
             user.reason['enviroment']++
             await this.userProfile.set(step.context, user);
         }
 
-        return await step.prompt(REASON_PROMPT, 'එහිදී ඔබ හිස් ආවරනයක් පලදිනවාද?', ['yes', 'no']);
+        return await step.prompt(REASON_PROMPT, 'එහිදී ඔබ හිස් ආවරනයක් පලදිනවාද?', ['ඔව්', 'නැත']);
     }
 
     async promptReason3(step) {
         const user = await this.userProfile.get(step.context, {});
-        if (step.result && step.result.value === 'no') {
+        if (step.result && step.result.value === 'නැත') {
             user.reason['enviroment']++
             await this.userProfile.set(step.context, user);
         }
 
-        return await step.prompt(REASON_PROMPT, 'ඔබ සාමාන්යෙන් දිනකට පැය 4කට වැඩි කාලයක් හිස් ආවරණයක් පැලද සිටිනවාද?', ['yes', 'no']);
+        return await step.prompt(REASON_PROMPT, 'ඔබ සාමාන්යෙන් දිනකට පැය 4කට වැඩි කාලයක් හිස් ආවරණයක් පැලද සිටිනවාද?', ['ඔව්', 'නැත']);
     }
 
     async promptReason4(step) {
         const user = await this.userProfile.get(step.context, {});
-        if (step.result && step.result.value === 'no') {
+        if (step.result && step.result.value === 'නැත') {
             user.reason['enviroment']++
             await this.userProfile.set(step.context, user);
         }
 
-        return await step.prompt(REASON_PROMPT, 'ඔබ දිනපතා කොන්ඩය පිරිසිදු කරනවාද?', ['yes', 'no']);
+        return await step.prompt(REASON_PROMPT, 'ඔබ දිනපතා කොන්ඩය පිරිසිදු කරනවාද?', ['ඔව්', 'නැත']);
     }
 
     async promptReason5(step) {
         const user = await this.userProfile.get(step.context, {});
-        if (step.result && step.result.value === 'no') {
+        if (step.result && step.result.value === 'නැත') {
             user.reason['enviroment']++
             await this.userProfile.set(step.context, user);
         }
 
-        return await step.prompt(REASON_PROMPT, 'ඔබ අධික ලෙස ක්ලෝරීන් හෝ වෙනත් රසායනික ද්‍රව්‍ය අඩංගු ජලයෙන් හිස සෝදනවාද?', ['yes', 'no']);
+        return await step.prompt(REASON_PROMPT, 'ඔබ අධික ලෙස ක්ලෝරීන් හෝ වෙනත් රසායනික ද්‍රව්‍ය අඩංගු ජලයෙන් හිස සෝදනවාද?', ['ඔව්', 'නැත']);
     }
 
     async promptReason6(step) {
         const user = await this.userProfile.get(step.context, {});
-        if (step.result && step.result.value === 'no') {
+        if (step.result && step.result.value === 'නැත') {
             user.reason['enviroment']++
             await this.userProfile.set(step.context, user);
         }
 
-        return await step.prompt(REASON_PROMPT, 'ඔබ කොන්ඩය තෙත් සහිතව තිබියදී තදින් බැඳ තබා ගෙන සිටිනවාද?', ['yes', 'no']);
+        return await step.prompt(REASON_PROMPT, 'ඔබ කොන්ඩය තෙත් සහිතව තිබියදී තදින් බැඳ තබා ගෙන සිටිනවාද?', ['ඔව්', 'නැත']);
     }
 
     async promptReason7(step) {
         const user = await this.userProfile.get(step.context, {});
-        if (step.result && step.result.value === 'no') {
+        if (step.result && step.result.value === 'නැත') {
             user.reason['enviroment']++
             await this.userProfile.set(step.context, user);
         }
 
-        return await step.prompt(REASON_PROMPT, 'කොන්ඩය තෙත් සහිතව තිබියදී හිස පීරනවාද?', ['yes', 'no']);
+        return await step.prompt(REASON_PROMPT, 'කොන්ඩය තෙත් සහිතව තිබියදී හිස පීරනවාද?', ['ඔව්', 'නැත']);
     }
 
     async captureReasonEnd(step) {
         const user = await this.userProfile.get(step.context);
-        if (step.result && step.result.value === 'no') {
+        if (step.result && step.result.value === 'නැත') {
             user.reason['enviroment']++
             await this.userProfile.set(step.context, user);
         }

@@ -53,39 +53,39 @@ class Depression extends ComponentDialog {
         user.reason.depression = 0
         await this.userProfile.set(step.context, user);
     
-        return await step.prompt(REASON_PROMPT, 'ඔබ අවම වශයෙන් පැය 8ක රාත්‍රී නින්දක් ලබා ගන්නවද?', ['yes', 'no']);
+        return await step.prompt(REASON_PROMPT, 'ඔබ අවම වශයෙන් පැය 8ක රාත්‍රී නින්දක් ලබා ගන්නවද?', ['ඔව්', 'නැත']);
     }
     async promptDepressionSad(step) {
         const user = await this.userProfile.get(step.context);
-        if (step.result && step.result.value === 'no') {
+        if (step.result && step.result.value === 'නැත') {
             user.reason.depression++
             await this.userProfile.set(step.context, user);
         }
         
-        return await step.prompt(REASON_PROMPT, 'ඔබ මේ දිනවල කිසියම් ගැටලුවක් සම්බන්ධව සිත් තැවුලෙන් පසු වෙනවාද?', ['yes', 'no']);
+        return await step.prompt(REASON_PROMPT, 'ඔබ මේ දිනවල කිසියම් ගැටලුවක් සම්බන්ධව සිත් තැවුලෙන් පසු වෙනවාද?', ['ඔව්', 'නැත']);
     }
     async promptDepressionEnviroment(step) {
         const user = await this.userProfile.get(step.context);
-        if (step.result && step.result.value === 'no') {
+        if (step.result && step.result.value === 'නැත') {
             user.reason.depression++
             await this.userProfile.set(step.context, user);
         }
     
-        return await step.prompt(REASON_PROMPT, 'ඔබ කිසියම් අසහනකාරී පරිසරයක ජීවත් වනවාද?', ['yes', 'no']);
+        return await step.prompt(REASON_PROMPT, 'ඔබ කිසියම් අසහනකාරී පරිසරයක ජීවත් වනවාද?', ['ඔව්', 'නැත']);
     }
     async promptDepressionAngry(step) {
         const user = await this.userProfile.get(step.context);
-        if (step.result && step.result.value === 'no') {
+        if (step.result && step.result.value === 'නැත') {
             user.reason.depression++
             await this.userProfile.set(step.context, user);
         }
     
-        return await step.prompt(REASON_PROMPT, 'මේ දිනවල ඔබට නිතර කේන්තියන ස්වභාවයක් තිබේද?', ['yes', 'no']);
+        return await step.prompt(REASON_PROMPT, 'මේ දිනවල ඔබට නිතර කේන්තියන ස්වභාවයක් තිබේද?', ['ඔව්', 'නැත']);
     }
     
     async captureDpressionEnd(step) {
         const user = await this.userProfile.get(step.context);
-        if (step.result && step.result.value === 'no') {
+        if (step.result && step.result.value === 'නැත') {
             user.reason.depression++
             await this.userProfile.set(step.context, user);
         }

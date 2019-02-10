@@ -35,7 +35,7 @@ class DryHair extends ComponentDialog {
     async promptReason1(step) {
         const user = await this.userProfile.get(step.context, {});
         user.reason = user.reason ? { ...user.reason } : {}
-        user.reason[REASON_TYPE] = 0
+        user.reason['dry_hair'] = 0
         await this.userProfile.set(step.context, user);
 
         return await step.prompt(REASON_PROMPT, 'ඔබගේ හිස කෙස්වල වියලි ස්වභාවයක් තිබේද?', ['ඔව්', 'නැත']);
@@ -44,7 +44,7 @@ class DryHair extends ComponentDialog {
     async promptReason2(step) {
         const user = await this.userProfile.get(step.context);
         if (step.result && step.result.value === 'ඔව්') {
-            user.reason[REASON_TYPE]++
+            user.reason['dry_hair']++
             await this.userProfile.set(step.context, user);
         }
 
@@ -54,11 +54,11 @@ class DryHair extends ComponentDialog {
     async captureReasonEnd(step) {
         const user = await this.userProfile.get(step.context);
         if (step.result && step.result.value === 'ඔව්') {
-            user.reason[REASON_TYPE]++
+            user.reason['dry_hair']++
             await this.userProfile.set(step.context, user);
         }
         
-        user.reason[REASON_TYPE] /= 1
+        user.reason[REASON_TYPE] /= 2
         user.reason.lastReason = 'dry_hair'
         await this.userProfile.set(step.context, user);
         return await step.endDialog();

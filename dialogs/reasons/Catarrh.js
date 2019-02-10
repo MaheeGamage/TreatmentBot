@@ -58,7 +58,7 @@ class Catarrh extends ComponentDialog {
             await this.userProfile.set(step.context, user);
         }
         
-        user.reason[REASON_TYPE] /= 1
+        user.reason[REASON_TYPE] /= 2
         user.reason.lastReason = 'catarrh'
         await this.userProfile.set(step.context, user);
         return await step.endDialog();

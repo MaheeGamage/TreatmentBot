@@ -21,6 +21,7 @@ const { ReasonFamilyDialog } = require('./dialogs/reasons/Family');
 const { ReasonCatarrhDialog } = require('./dialogs/reasons/Catarrh');
 const { ReasonHighTempDialog } = require('./dialogs/reasons/HighTemp');
 const { ReasonDryHairDialog } = require('./dialogs/reasons/DryHair');
+const { ReasonUncleanDialog } = require('./dialogs/reasons/Unclean');
 
 const DIALOG_REASON_NUTRITION = 'dialog_reason_nutrition';
 const DIALOG_REASON_DEPRESSION = 'dialog_reason_depression';
@@ -31,6 +32,7 @@ const DIALOG_REASON_FAMILY = 'dialog_reason_family';
 const DIALOG_REASON_CATARRH = 'dialog_reason_catarrh';
 const DIALOG_REASON_HIGH_TEMP = 'dialog_reason_high_temp';
 const DIALOG_REASON_DRY_HAIR = 'dialog_reason_dry_hair';
+const DIALOG_REASON_UNCLEAN = 'dialog_reason_unclean';
 /******************** */
 
 const DIALOG_STATE_PROPERTY = 'dialogState';
@@ -103,6 +105,7 @@ class MultiTurnBot {
         this.dialogs.add(new ReasonCatarrhDialog(DIALOG_REASON_CATARRH, this.userProfile));
         this.dialogs.add(new ReasonHighTempDialog(DIALOG_REASON_HIGH_TEMP, this.userProfile));
         this.dialogs.add(new ReasonDryHairDialog(DIALOG_REASON_DRY_HAIR, this.userProfile));
+        this.dialogs.add(new ReasonUncleanDialog(DIALOG_REASON_UNCLEAN, this.userProfile));
         /***********************/
 
         /********Treatment Dialog ******/
@@ -221,8 +224,10 @@ class MultiTurnBot {
         const user = await this.userProfile.get(step.context, {});
         user.step = 4
 
-        delete user.reason.latReason
+        console.log('before remove: ')
         console.log(user.reason)
+        delete user.reason.lastReason
+        // console.log(user.reason)
 
         var maxProb
         for (var key in user.reason) {
@@ -357,7 +362,7 @@ class MultiTurnBot {
                                 await dc.beginDialog(DIALOG_REASON_NUTRITION);
 
                         }
-                        if (user.hairProblem === 'කොන්ඩය තුනී වීම') { //&& false
+                        else if (user.hairProblem === 'කොන්ඩය තුනී වීම') { //&& false
                             // console.log(user.reason)
                             if (user.reason && user.reason.lastReason && user.reason.lastReason === 'family') {
                                 await dc.beginDialog(DIALOG_REASON_CATARRH)
@@ -373,7 +378,7 @@ class MultiTurnBot {
                                 await dc.beginDialog(DIALOG_REASON_FAMILY);
 
                         }
-                        if (user.hairProblem === 'කෙස් අග පැලීම') { //&& false
+                        else if (user.hairProblem === 'කෙස් අග පැලීම') { //&& false
                             // console.log(user.reason)
                             if (user.reason && user.reason.lastReason && user.reason.lastReason === 'dry_hair') {
                                 await dc.beginDialog(DIALOG_REASON_CHEMICAL)
@@ -389,6 +394,64 @@ class MultiTurnBot {
                             }
                             else
                                 await dc.beginDialog(DIALOG_REASON_DRY_HAIR);
+
+                        }
+                        else if (user.hairProblem === 'කෙස් වර්ධනය හීන වීම') { //&& false
+                            // console.log(user.reason)
+                            if (user.reason && user.reason.lastReason && user.reason.lastReason === 'nutrition') {
+                                await dc.beginDialog(DIALOG_REASON_CHEMICAL)
+                            }
+                            else if (user.reason && user.reason.lastReason && user.reason.lastReason === 'chemical') {
+                                await dc.beginDialog(DIALOG_REASON_FAMILY)
+                            }
+                            else if (user.reason && user.reason.lastReason && user.reason.lastReason === 'family') {
+                                await dc.beginDialog(DIALOG_REASON_DEPRESSION)
+                            }
+                            else if (user.reason && user.reason.lastReason && user.reason.lastReason === 'depression') {
+                                console.log(user.reason)
+                                await dc.beginDialog(SET_NEXT_STEP_4)
+                            }
+                            else
+                                await dc.beginDialog(DIALOG_REASON_NUTRITION);
+
+                        }
+                        else if (user.hairProblem === 'ඉස්සොරි/හිස්සොරි/හිස්හොරි') { //&& false
+                            // console.log(user.reason)
+                            if (user.reason && user.reason.lastReason && user.reason.lastReason === 'dandruff') {
+                                console.log(user.reason)
+                                await dc.beginDialog(SET_NEXT_STEP_4)
+                            }
+                            else
+                                await dc.beginDialog(DIALOG_REASON_DANDRUFF);
+
+                        }
+                        else if (user.hairProblem === 'පරපොශිතයන්') { //&& false
+                            // console.log(user.reason)
+                            if (user.reason && user.reason.lastReason && user.reason.lastReason === 'unclean') {
+                                console.log(user.reason)
+                                await dc.beginDialog(SET_NEXT_STEP_4)
+                            }
+                            else
+                                await dc.beginDialog(DIALOG_REASON_UNCLEAN);
+
+                        }
+                        else if (user.hairProblem === 'කොන්ඩය සුදු වීම') { //&& false
+                            // console.log(user.reason)
+                            if (user.reason && user.reason.lastReason && user.reason.lastReason === 'nutrition') {
+                                await dc.beginDialog(DIALOG_REASON_CHEMICAL)
+                            }
+                            else if (user.reason && user.reason.lastReason && user.reason.lastReason === 'chemical') {
+                                await dc.beginDialog(DIALOG_REASON_FAMILY)
+                            }
+                            else if (user.reason && user.reason.lastReason && user.reason.lastReason === 'family') {
+                                await dc.beginDialog(DIALOG_REASON_DEPRESSION)
+                            }
+                            else if (user.reason && user.reason.lastReason && user.reason.lastReason === 'depression') {
+                                console.log(user.reason)
+                                await dc.beginDialog(SET_NEXT_STEP_4)
+                            }
+                            else
+                                await dc.beginDialog(DIALOG_REASON_NUTRITION);
 
                         }
                     }

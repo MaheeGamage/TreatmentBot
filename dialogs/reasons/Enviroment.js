@@ -128,7 +128,7 @@ class Enviroment extends ComponentDialog {
             user.reason['enviroment']++
             await this.userProfile.set(step.context, user);
         }
-        user.reason.enviroment = user.reason.enviroment/7
+        user.reason.enviroment /= 7
         user.reason.lastReason = 'enviroment'
         await this.userProfile.set(step.context, user);
         return await step.endDialog();

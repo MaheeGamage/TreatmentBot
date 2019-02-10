@@ -69,7 +69,7 @@ class Family extends ComponentDialog {
             await this.userProfile.set(step.context, user);
         }
         
-        user.reason[REASON_TYPE] /= 1
+        user.reason[REASON_TYPE] /= 3
         user.reason.lastReason = 'family'
         await this.userProfile.set(step.context, user);
         return await step.endDialog();

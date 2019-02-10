@@ -3,7 +3,7 @@
 const { ComponentDialog, WaterfallDialog, TextPrompt, ChoicePrompt } = require('botbuilder-dialogs');
 
 // Dialog IDs
-const CHEMICAL = 'chemical';
+const WATERFALL_DIALOG_ID = 'chemical';
 
 // Prompt IDs
 const REASON_PROMPT = 'reason_prompt';
@@ -11,19 +11,6 @@ const REASON_PROMPT = 'reason_prompt';
 //Reason type
 const REASON_TYPE='chemical'
 
-// const VALIDATION_SUCCEEDED = true;
-// const VALIDATION_FAILED = !VALIDATION_SUCCEEDED;
-
-/**
- * Demonstrates the following concepts:
- *  Use a subclass of ComponentDialog to implement a multi-turn conversation
- *  Use a Waterfall dialog to model multi-turn conversation flow
- *  Use custom prompts to validate user input
- *  Store conversation and user state
- *
- * @param {String} dialogId unique identifier for this dialog instance
- * @param {PropertyStateAccessor} userProfile property accessor for user state
- */
 class Chemical extends ComponentDialog {
     constructor(dialogId, userProfile) {
         super(dialogId);
@@ -32,10 +19,7 @@ class Chemical extends ComponentDialog {
         if (!dialogId) throw new Error('Missing parameter.  dialogId is required');
         if (!userProfile) throw new Error('Missing parameter.  userProfile is required');
 
-        // Add a water fall dialog with 4 steps.
-        // The order of step function registration is importent
-        // as a water fall dialog executes steps registered in order
-        this.addDialog(new WaterfallDialog(CHEMICAL, [
+        this.addDialog(new WaterfallDialog(WATERFALL_DIALOG_ID, [
             this.promptReason1.bind(this),
             this.captureReasonEnd.bind(this),
         ]));
@@ -53,7 +37,7 @@ class Chemical extends ComponentDialog {
         user.reason[REASON_TYPE] = 0
         await this.userProfile.set(step.context, user);
 
-        return await step.prompt(REASON_PROMPT, 'ඔබ කිසියම් රසායනික ආලේපනයක් හිසෙහි ගල්වනවාද?', ['ඔව්', 'නැත']);
+        return await step.prompt(REASON_PROMPT, 'ඔබ කිසියම් රසායනික ආලේපනයක් හිස කෙස් වල ගල්වනවාද?', ['ඔව්', 'නැත']);
     }
 
     async captureReasonEnd(step) {
@@ -62,7 +46,7 @@ class Chemical extends ComponentDialog {
             user.reason[REASON_TYPE]++
             await this.userProfile.set(step.context, user);
         }
-        // user.step = 4
+        
         user.reason[REASON_TYPE] /= 1
         user.reason.lastReason = 'chemical'
         await this.userProfile.set(step.context, user);

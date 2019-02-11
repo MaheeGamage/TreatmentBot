@@ -22,6 +22,8 @@ const { ReasonCatarrhDialog } = require('./dialogs/reasons/Catarrh');
 const { ReasonHighTempDialog } = require('./dialogs/reasons/HighTemp');
 const { ReasonDryHairDialog } = require('./dialogs/reasons/DryHair');
 const { ReasonUncleanDialog } = require('./dialogs/reasons/Unclean');
+const { ReasonUnbalanceFoodDialog } = require('./dialogs/reasons/UnbalanceFood');
+const { ReasonOtherDialog } = require('./dialogs/reasons/Other');
 
 const DIALOG_REASON_NUTRITION = 'dialog_reason_nutrition';
 const DIALOG_REASON_DEPRESSION = 'dialog_reason_depression';
@@ -33,6 +35,8 @@ const DIALOG_REASON_CATARRH = 'dialog_reason_catarrh';
 const DIALOG_REASON_HIGH_TEMP = 'dialog_reason_high_temp';
 const DIALOG_REASON_DRY_HAIR = 'dialog_reason_dry_hair';
 const DIALOG_REASON_UNCLEAN = 'dialog_reason_unclean';
+const DIALOG_REASON_UNBALANCE_FOOD = 'dialog_reason_unbalance_food';
+const DIALOG_REASON_OTHER = 'dialog_reason_other';
 /******************** */
 
 const DIALOG_STATE_PROPERTY = 'dialogState';
@@ -45,6 +49,8 @@ const SUGGEST_TREATMENT = 'suggest_treatment';
 const SET_NEXT_STEP_4 = 'set_next_step_4'
 const DIALOG_HAIR_SYMPTOMS = 'hair_symptoms_dialog';
 const DIALOG_HAIR_PROBLEMS = 'dialog_hair_problems'
+
+const DIALOG_FAT_PROBLEMS = 'dialog_fat_problems'
 
 const DIALOG_HAIR_FALL = 'hair_fall_dialog'
 
@@ -106,6 +112,8 @@ class MultiTurnBot {
         this.dialogs.add(new ReasonHighTempDialog(DIALOG_REASON_HIGH_TEMP, this.userProfile));
         this.dialogs.add(new ReasonDryHairDialog(DIALOG_REASON_DRY_HAIR, this.userProfile));
         this.dialogs.add(new ReasonUncleanDialog(DIALOG_REASON_UNCLEAN, this.userProfile));
+        this.dialogs.add(new ReasonUnbalanceFoodDialog(DIALOG_REASON_UNBALANCE_FOOD, this.userProfile));
+        this.dialogs.add(new ReasonOtherDialog(DIALOG_REASON_OTHER, this.userProfile));
         /***********************/
 
         /********Treatment Dialog ******/
@@ -133,6 +141,11 @@ class MultiTurnBot {
         this.dialogs.add(new WaterfallDialog(DIALOG_HAIR_PROBLEMS, [
             this.promptHairProblem.bind(this),
             this.captureHairProblem.bind(this),
+        ]));
+
+        this.dialogs.add(new WaterfallDialog(DIALOG_FAT_PROBLEMS, [
+            this.promptFatProblem.bind(this),
+            this.captureFatProblem.bind(this),
         ]));
 
         // Create a dialog that displays a user name after it has been collected.
@@ -194,7 +207,7 @@ class MultiTurnBot {
     }
 
     async promptIllLocation(step) {
-        return await step.prompt(ILL_LOCATION_PROMPT, 'Where is your ill location', ['කොන්ඩය', 'Skin', 'Lips', 'Nails']);
+        return await step.prompt(ILL_LOCATION_PROMPT, 'Where is your ill location', ['කොන්ඩය', 'ස්ථුලතාවය']);
     }
 
     async captureIllLocation(step) {
@@ -220,6 +233,19 @@ class MultiTurnBot {
         return await step.endDialog();
     }
 
+    async promptFatProblem(step) {
+        return await step.prompt(HAIR_PROBLEM_PROMPT, 'Where is your Hair Problem', ['අධික මේද තැන්පත් වීම', 'බඩ ඉදිරියට නෙරා ඒම']);
+    }
+
+    async captureFatProblem(step) {
+        const user = await this.userProfile.get(step.context, {});
+        user.fatProblem = step.result && step.result.value
+        user.step = 3
+        await this.userProfile.set(step.context, user);
+
+        return await step.endDialog();
+    }
+
     async goToNextStep4(step) {
         const user = await this.userProfile.get(step.context, {});
         user.step = 4
@@ -239,9 +265,9 @@ class MultiTurnBot {
                     if (user.reason[key] > user.reason[maxProb]) {
                         maxProb = key
                     }
-                    
+
                 }
-                if(user.reason[key] == 1){
+                if (user.reason[key] == 1) {
                     maxProb = key
                     break;
                 }
@@ -262,7 +288,7 @@ class MultiTurnBot {
         await step.context.sendActivity(`Reason: ${user.suggestedReason}`);
         await step.context.sendActivity(`Treatments: ${Treatments[user.suggestedReason]}`);
 
-        return await step.prompt(RESTART_QUESTION_PROMPT, 'Do you have another question', ['ඔව්']);
+        return await step.prompt(RESTART_QUESTION_PROMPT, 'Do you have another question', ['ඔව්', 'නැත']);
     }
 
     async captureRestartQuestion(step) {
@@ -275,11 +301,11 @@ class MultiTurnBot {
             newUser.step = 1
             await this.userProfile.set(step.context, newUser);
         } else {
-            // user.step = 5
+            await step.context.sendActivity(`Thank you`);
         }
 
-        
-        return await step.endDialog();
+
+        // return await step.endDialog();
     }
 
 
@@ -321,10 +347,11 @@ class MultiTurnBot {
             // If the bot has not yet responded, continue processing the current dialog.
             await dc.continueDialog();
 
+
             // Start the sample dialog in response to any other input.
             if (!turnContext.responded) {
                 const user = await this.userProfile.get(dc.context, {});
-                // console.log('out: ' + user.step)
+                console.log('Fat: ' + user.location)
                 if (!user.step) {
                     await dc.beginDialog(WHO_ARE_YOU);
                 }
@@ -334,6 +361,9 @@ class MultiTurnBot {
                 else if (user.step === 2) {
                     if (user.location === 'කොන්ඩය') { //&& false
                         await dc.beginDialog(DIALOG_HAIR_PROBLEMS);
+                    }
+                    if (user.location === 'ස්ථුලතාවය') { //&& false
+                        await dc.beginDialog(DIALOG_FAT_PROBLEMS);
                     }
                 }
                 else if (user.step === 3) {
@@ -455,6 +485,35 @@ class MultiTurnBot {
 
                         }
                     }
+                    else if (user.location === 'ස්ථුලතාවය') {
+                        if (user.fatProblem === 'අධික මේද තැන්පත් වීම') { //&& false
+                            // console.log(user.reason)
+                            if (user.reason && user.reason.lastReason && user.reason.lastReason === 'unbalance_food') {
+                                // await dc.beginDialog(SET_NEXT_STEP_4)
+                                await dc.beginDialog(DIALOG_REASON_FAMILY)
+                            }
+                            else if (user.reason && user.reason.lastReason && user.reason.lastReason === 'family') {
+                                await dc.beginDialog(SET_NEXT_STEP_4)
+                            }
+                            else
+                                await dc.beginDialog(DIALOG_REASON_UNBALANCE_FOOD);
+
+                        }
+                        else if (user.fatProblem === 'බඩ ඉදිරියට නෙරා ඒම') { //&& false
+                            // console.log(user.reason)
+                            if (user.reason && user.reason.lastReason && user.reason.lastReason === 'unbalance_food') {
+                                // await dc.beginDialog(SET_NEXT_STEP_4)
+                                await dc.beginDialog(DIALOG_REASON_FAMILY)
+                            }
+                            else if (user.reason && user.reason.lastReason && user.reason.lastReason === 'family') {
+                                await dc.beginDialog(SET_NEXT_STEP_4)
+                            }
+                            else
+                                await dc.beginDialog(DIALOG_REASON_UNBALANCE_FOOD);
+
+                        }
+                    }
+
                 }
                 else if (user.step === 4) {
                     console.log(user.reason)

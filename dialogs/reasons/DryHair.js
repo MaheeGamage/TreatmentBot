@@ -53,7 +53,7 @@ class DryHair extends ComponentDialog {
 
     async captureReasonEnd(step) {
         const user = await this.userProfile.get(step.context);
-        if (step.result && step.result.value === 'ඔව්') {
+        if (step.result && step.result.value === 'නැත') {
             user.reason['dry_hair']++
             await this.userProfile.set(step.context, user);
         }

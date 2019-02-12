@@ -51,22 +51,22 @@ class UnbalanceFood extends ComponentDialog {
             await this.userProfile.set(step.context, user);
         }
 
-        return await step.prompt(REASON_PROMPT, 'ඔබ දිනකට ආහාර වේල් කීයක් ලබා ගන්නවාද?', ['ඔව්', 'නැත']);
+        return await step.prompt(REASON_PROMPT, 'ඔබ දිනකට ආහාර වේල් කීයක් ලබා ගන්නවාද?', ['3ට අඩු', '3ට වැඩි']);
     }
 
     async promptReason3(step) {
         const user = await this.userProfile.get(step.context);
-        if (step.result && step.result.value === 'ඔව්') {
+        if (step.result && step.result.value === '3ට වැඩි') {
             user.reason[REASON_TYPE]++
             await this.userProfile.set(step.context, user);
         }
 
-        return await step.prompt(REASON_PROMPT, 'ඔබ ප්‍රධාන ආහාර වේල් වලට අමතරව ආහාර වේල් කීයක් ලබා ගන්නවාද?', ['ඔව්', 'නැත']);
+        return await step.prompt(REASON_PROMPT, 'ඔබ ප්‍රධාන ආහාර වේල් වලට අමතරව ආහාර වේල් කීයක් ලබා ගන්නවාද?', ['3ට අඩු', '3ට වැඩි']);
     }
 
     async promptReason4(step) {
         const user = await this.userProfile.get(step.context);
-        if (step.result && step.result.value === 'ඔව්') {
+        if (step.result && step.result.value === '3ට වැඩි') {
             user.reason[REASON_TYPE]++
             await this.userProfile.set(step.context, user);
         }
@@ -81,12 +81,12 @@ class UnbalanceFood extends ComponentDialog {
             await this.userProfile.set(step.context, user);
         }
 
-        return await step.prompt(REASON_PROMPT, 'ඔබ දිනකට කොපමණ වේලාවක් ව්‍යායාම් / දහදිය දමන ක්‍රියාවල නිරත වෙනවාද?', ['ඔව්', 'නැත']);
+        return await step.prompt(REASON_PROMPT, 'ඔබ දිනකට කොපමණ වේලාවක් ව්‍යායාම් / දහදිය දමන ක්‍රියාවල නිරත වෙනවාද?', ['පැය 2ට අඩු', 'පැය2ට වැඩි']);
     }
 
     async captureReasonEnd(step) {
         const user = await this.userProfile.get(step.context);
-        if (step.result && step.result.value === 'ඔව්') {
+        if (step.result && step.result.value === 'පැය 2ට අඩු') {
             user.reason[REASON_TYPE]++
             await this.userProfile.set(step.context, user);
         }

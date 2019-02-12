@@ -104,7 +104,7 @@ class Enviroment extends ComponentDialog {
 
     async promptReason6(step) {
         const user = await this.userProfile.get(step.context, {});
-        if (step.result && step.result.value === 'නැත') {
+        if (step.result && step.result.value === 'ඔව්') {
             user.reason['enviroment']++
             await this.userProfile.set(step.context, user);
         }
@@ -114,7 +114,7 @@ class Enviroment extends ComponentDialog {
 
     async promptReason7(step) {
         const user = await this.userProfile.get(step.context, {});
-        if (step.result && step.result.value === 'නැත') {
+        if (step.result && step.result.value === 'ඔව්') {
             user.reason['enviroment']++
             await this.userProfile.set(step.context, user);
         }
@@ -124,7 +124,7 @@ class Enviroment extends ComponentDialog {
 
     async captureReasonEnd(step) {
         const user = await this.userProfile.get(step.context);
-        if (step.result && step.result.value === 'නැත') {
+        if (step.result && step.result.value === 'ඔව්') {
             user.reason['enviroment']++
             await this.userProfile.set(step.context, user);
         }

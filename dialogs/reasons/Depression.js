@@ -66,7 +66,7 @@ class Depression extends ComponentDialog {
     }
     async promptDepressionEnviroment(step) {
         const user = await this.userProfile.get(step.context);
-        if (step.result && step.result.value === 'නැත') {
+        if (step.result && step.result.value === 'ඔව්') {
             user.reason.depression++
             await this.userProfile.set(step.context, user);
         }
@@ -75,7 +75,7 @@ class Depression extends ComponentDialog {
     }
     async promptDepressionAngry(step) {
         const user = await this.userProfile.get(step.context);
-        if (step.result && step.result.value === 'නැත') {
+        if (step.result && step.result.value === 'ඔව්') {
             user.reason.depression++
             await this.userProfile.set(step.context, user);
         }
@@ -85,7 +85,7 @@ class Depression extends ComponentDialog {
     
     async captureDpressionEnd(step) {
         const user = await this.userProfile.get(step.context);
-        if (step.result && step.result.value === 'නැත') {
+        if (step.result && step.result.value === 'ඔව්') {
             user.reason.depression++
             await this.userProfile.set(step.context, user);
         }

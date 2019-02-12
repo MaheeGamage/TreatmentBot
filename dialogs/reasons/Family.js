@@ -59,12 +59,12 @@ class Family extends ComponentDialog {
             await this.userProfile.set(step.context, user);
         }
 
-        return await step.prompt(REASON_PROMPT, 'කොපමණ කාලයක සිට ඔබට මේ රෝගී තත්ත්වය තිබෙනවාද?', ['ඔව්', 'නැත']);
+        return await step.prompt(REASON_PROMPT, 'කොපමණ කාලයක සිට ඔබට මේ රෝගී තත්ත්වය තිබෙනවාද?', ['කුඩා කළ සිට', 'මෑතක සිට']);
     }
 
     async captureReasonEnd(step) {
         const user = await this.userProfile.get(step.context);
-        if (step.result && step.result.value === 'ඔව්') {
+        if (step.result && step.result.value === 'කුඩා කළ සිට') {
             user.reason[REASON_TYPE]++
             await this.userProfile.set(step.context, user);
         }

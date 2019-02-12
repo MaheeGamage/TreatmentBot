@@ -56,7 +56,7 @@ class Dandruff extends ComponentDialog {
 
     async promptDandruffDry(step) {
         const user = await this.userProfile.get(step.context, {});
-        if (step.result && step.result.value === 'නැත') {
+        if (step.result && step.result.value === 'ඔව්') {
             user.reason.dandruff++
             await this.userProfile.set(step.context, user);
         }
@@ -66,7 +66,7 @@ class Dandruff extends ComponentDialog {
 
     async captureDandruffEnd(step) {
         const user = await this.userProfile.get(step.context);
-        if (step.result && step.result.value === 'නැත') {
+        if (step.result && step.result.value === 'ඔව්') {
             user.reason.dandruff++
             await this.userProfile.set(step.context, user);
         }

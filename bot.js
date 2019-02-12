@@ -171,7 +171,7 @@ class MultiTurnBot {
         const user = await this.userProfile.get(step.context, {});
         user.name = step.result;
         await this.userProfile.set(step.context, user);
-        return await step.prompt(AGE_PROMPT, `What is your age?`,
+        return await step.prompt(AGE_PROMPT, `ඔබගේ වයස කුමක්ද?`,
             {
                 retryPrompt: 'Sorry, please specify your age as a positive number or say cancel.'
             }
@@ -207,7 +207,7 @@ class MultiTurnBot {
     }
 
     async promptIllLocation(step) {
-        return await step.prompt(ILL_LOCATION_PROMPT, 'Where is your ill location', ['කොන්ඩය', 'ස්ථුලතාවය']);
+        return await step.prompt(ILL_LOCATION_PROMPT, 'ඔබගේ රෝග ස්ථානය සඳහන් කරන්න', ['කොන්ඩය', 'ස්ථුලතාවය']);
     }
 
     async captureIllLocation(step) {
@@ -220,7 +220,7 @@ class MultiTurnBot {
     }
 
     async promptHairProblem(step) {
-        return await step.prompt(HAIR_PROBLEM_PROMPT, 'Where is your Hair Problem', ['කොන්ඩය වැටීම', 'කොන්ඩය තුනී වීම',
+        return await step.prompt(HAIR_PROBLEM_PROMPT, 'ඔබට තිබෙන රෝග ලක්ෂණය කුමක්ද?', ['කොන්ඩය වැටීම', 'කොන්ඩය තුනී වීම',
             'කෙස් අග පැලීම', 'කෙස් වර්ධනය හීන වීම', 'ඉස්සොරි/හිස්සොරි/හිස්හොරි', 'පරපොශිතයන්', 'කොන්ඩය සුදු වීම']);
     }
 
@@ -229,12 +229,13 @@ class MultiTurnBot {
         user.hairProblem = step.result && step.result.value
         user.step = 3
         await this.userProfile.set(step.context, user);
+        step.context.sendActivity(`ඔබගේ රෝගයට හේතුව සොයා ගැනීම සඳහා පහත ප්‍රශ්ණ වලට පිළිතුරු  ලබා දෙන්න.`);
 
         return await step.endDialog();
     }
 
     async promptFatProblem(step) {
-        return await step.prompt(HAIR_PROBLEM_PROMPT, 'Where is your Hair Problem', ['අධික මේද තැන්පත් වීම', 'බඩ ඉදිරියට නෙරා ඒම']);
+        return await step.prompt(HAIR_PROBLEM_PROMPT, 'ඔබට තිබෙන රෝග ලක්ෂණය කුමක්ද?', ['අධික මේද තැන්පත් වීම', 'බඩ ඉදිරියට නෙරා ඒම']);
     }
 
     async captureFatProblem(step) {
@@ -242,6 +243,7 @@ class MultiTurnBot {
         user.fatProblem = step.result && step.result.value
         user.step = 3
         await this.userProfile.set(step.context, user);
+        step.context.sendActivity(`ඔබගේ රෝගයට හේතුව සොයා ගැනීම සඳහා පහත ප්‍රශ්ණ වලට පිළිතුරු  ලබා දෙන්න.`);
 
         return await step.endDialog();
     }
@@ -278,17 +280,18 @@ class MultiTurnBot {
         await this.userProfile.set(step.context, user);
         console.log('highest Prob ' + maxProb)
 
-        await step.context.sendActivity(`Say something to get your treatments`);
+        await step.context.sendActivity(`ඔබගේ ප්‍රතිකාර යෝජනා ලබාගැනීමට යමක් ටයිප් කරන්න`);
         return await step.endDialog();
     }
 
     async getTreatment(step) {
         const user = await this.userProfile.get(step.context, {});
 
-        await step.context.sendActivity(`Reason: ${user.suggestedReason}`);
-        await step.context.sendActivity(`Treatments: ${Treatments[user.suggestedReason]}`);
+        await step.context.sendActivity(`ඔබගේ රෝගයට හේතුව ලෙස මම හඳුනාගත්තේ, ඔබට ${user.suggestedReason} ඇති බවයි. `);
+        await step.context.sendActivity(`ඒ අනුව පහත ප්‍රතිකාර ලබා ගැනීමෙන් ඔබගේ ප්‍රශ්නය අවම කර ගත හැකි වේ.`);
+        await step.context.sendActivity(`${Treatments[user.suggestedReason]}`);
 
-        return await step.prompt(RESTART_QUESTION_PROMPT, 'Do you have another question', ['ඔව්', 'නැත']);
+        return await step.prompt(RESTART_QUESTION_PROMPT, 'ඹබට ඒ හැර වෙනත් ප්‍රශ්න තිබේද?', ['ඔව්', 'නැත']);
     }
 
     async captureRestartQuestion(step) {
@@ -301,7 +304,7 @@ class MultiTurnBot {
             newUser.step = 1
             await this.userProfile.set(step.context, newUser);
         } else {
-            await step.context.sendActivity(`Thank you`);
+            await step.context.sendActivity(`අපගේ සේවය ලබා ගැනීම පිලිබඳ ස්තූතියි. `);
         }
 
 
@@ -554,9 +557,9 @@ class MultiTurnBot {
 module.exports.MultiTurnBot = MultiTurnBot;
 
 const Treatments = {
-    nutrition: 'get nutrition',
-    depression: 'reduce depression',
-    dandruff: 'remove dandruff',
+    nutrition: '(සම සදහා ) අදාල ස්ථානයේ  පිපිණ්ඝ්ජ්ණ්ඝ්ජා ඉස්ම සමඟ පෙපෙර්මින්ට් ඉස්ම හෝ මින්ට් ඉස්ම එක්ව ගෙන ආලෙප කරන්න\n(හිසකෙස් සඳහා ) පලා සහ කොල පැහැති ධාන්‍ය වර්ග වැඩිපුර ආහාරයට ගන්න\nයකඩ සහ ඛනිජ ලවණ අඩංගු ආහාර දිaනපතා අහාර වේලට එකතු කරගන්න\nකුඩා මාලු ආහාරයට එක් කරගන්න\nදෛනික ජල පරිභෝජනය වැඩි කරන්න.\nවැඩිපුර කෙඳි සහිත ආහාර පරිභෝජනය කරන්න',
+    depression: 'අවම වශයෙන් පැය 6ක වත් හොඳ නින්දක් ලබගන්න.\nදිනකට විනාඩි 10ක් වත් භාවනවක යෙදෙන්න. (ආනාපානසති භාවනව හෝ මෛත්‍රී භාවනාව පහසුවෙන් කල හැක.)\nරාත්‍රී නින්දට පෙර කැෆේන් අඩංගු පාන වර්ග භාවිතා කිරිමෙන් වලකින්න.\nපෙපෙර්මින්ට් තේ භාවිතා කරන්න.',
+    dandruff: 'රූපලාවණ්‍ය ආලේපන වර්ග භාවිතයෙන් හැකිතාක් ඉවත් වෙන්න. සුදුසු පිරිසිදුකාරකයක් යොදා හිස සෝදන්න.\nහිස් කබල හිස් හොරි මර්ධනය කරන ශැම්පෝ වර්ගයක් යොදා දිනපතා හිස් හොරි ඉවත්වන ඒ සම්බාහනය කර සෝදා හරින්න \nඔබ පරිහරණය කරන තුවය, කොට්ටය, කොට්ට උර සතිපතා උනු වතුරෙන් සෝදා වේලා පරිහරණය කරන්න.\nඋලු හාල් සහ දෙහි මිශ්‍ර කල මද උණුසුම් ජලයෙන් හිස්කබල සෝදන්න.\nහිස් හොරි මුහුණට වැටී මුහුණේ බිබිලි ඇත්නම් දෙහි ඉස්ම මිශ්‍ර කල මද උණුසුම් ජලයෙන් මුහුණ සෝදන්න.\nගොඩපර ගෙඩි ගලගා හිස් කබලෙහි ආලේප කර පැය ½ක් පමණ හිඳ පිරිසිදු ජලයෙන් ඉස සෝදන්න \nදිනපතා හිස සෝදා කොණ්ඩය හොඳින් වේලා ගන්න.\nකොහොඹ සහ කහ මිශ්‍ර කර තලපයක් වන සේ අඹරා සකසාගෙන මුහුණේ බිබිලෙ සහිත තැන් වල ආලේප කරන්න.',
     enviroment: 'better enviroment',
-    chemical: 'remove chemical',
+    chemical: 'දෙහි ඉස්ම මිශ්‍ර කල මද උණුසුම් ජලයෙන් දිනකට තුන්වරක් වත් පිරිසිදු කරන්න.\n(හිස කෙස් සඳහා) කෘතිම වර්ණක හා රසායනික ද්‍රව්‍ය හිස කෙස් වල ආලේප කරන්න ',
 }
